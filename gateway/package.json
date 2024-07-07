@@ -1,0 +1,40 @@
+{
+  "name": "devkit-gateway",
+  "version": "1.0.0",
+  "description": "Devkit Gateway Tenency microservice",
+  "main": "gateway.js",
+  "type": "module",
+  "scripts": {
+    "start": "node gateway.js",
+    "dev": "nodemon gateway.js",
+    "dev-i": "nodemon --trace-warnings --inspect=0.0.0.0:9230 gateway.js",
+    "dev-brk": "nodemon --inspect-brk=0.0.0.0:9230 gateway.js"
+  },
+  "keywords": [
+    "microservices",
+    "gateway",
+    "tenancy",
+    "tenant",
+    "applications"
+  ],
+  "author": "Rafael Freitas Lima",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.11",
+    "express": "^4.19.2",
+    "express-async-errors": "^3.1.1",
+    "http-proxy-middleware": "^3.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
+    "md5": "^2.3.0",
+    "mongoose": "^8.4.1",
+    "uuid": "^10.0.0",
+    "wampark": "^4.2.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.3"
+  }
+}
