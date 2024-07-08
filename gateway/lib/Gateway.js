@@ -23,8 +23,7 @@ import httpErrorHandler from '../plugins/httpErrorHandler.js'
 import healthcheckRoutes from '../http/routes/healthcheck.routes.js';
 import tenantRoutes from '../http/routes/tentant.routes.js';
 import containersRoutes from '../http/routes/containers.routes.js';
-// import routeRoutes from './http/routes/rpc.js';
-// import proxyRoutes from './http/routes/proxy.js';
+import gatewayRoutes from '../http/routes/gateway.routes.js';
 
 /**
  * Export Application instance
@@ -73,7 +72,9 @@ export class Gateway {
     app.use('/tenant', tenantRoutes); // Tenant routes
     this.log.block('REST').info('/containers')
     app.use('/containers', containersRoutes); // Containers routes
-    // app.use('/rpc', routeRoutes); // Containers routes
+    this.log.block('RET').info('/gateway')
+    app.use('/gateway', gatewayRoutes); // Gateway routes
+    
   }
 }
 
