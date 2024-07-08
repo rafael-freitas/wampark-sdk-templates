@@ -1,0 +1,38 @@
+{
+  "name": "devkit-container",
+  "version": "1.0.0",
+  "description": "Devkit Container Tenency microservice",
+  "main": "container.js",
+  "type": "module",
+  "scripts": {
+    "scretkey": "node scretkey.js",
+    "start": "node container.js",
+    "start-i": "node --inspect=0.0.0.0:9233 container.js",
+    "start-brk": "node --inspect-brk=0.0.0.0:9233 container.js",
+    "dev": "nodemon container.js",
+    "dev-i": "nodemon --inspect=0.0.0.0:9233 container.js",
+    "dev-brk": "nodemon --inspect-brk=0.0.0.0:9233 container.js"
+  },
+  "keywords": [
+    "microservices",
+    "container",
+    "tenancy",
+    "tenant",
+    "applications"
+  ],
+  "author": "Rafael Freitas",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "express-async-errors": "^3.1.1",
+    "lodash": "^4.17.21",
+    "mongoose": "^8.4.1",
+    "uuid": "^10.0.0",
+    "wampark": "^4.2.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.3"
+  }
+}
