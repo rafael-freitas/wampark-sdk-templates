@@ -90,7 +90,7 @@ router.put('/:id', authorizer, async (req, res, next) => {
 
 router.delete('/:id', authorizer, async (req, res, next) => {
   try {
-    await store.containers.delete(req.params.id);
+    const deleteResult = await store.containers.delete(req.params.id);
     // const deleteResult = await ContainersModel.findByIdAndDelete(req.params.id);
     if (!deleteResult) {
       throw new ApplicationError({
