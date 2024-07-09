@@ -72,7 +72,7 @@ export class Gateway {
     app.use('/tenant', tenantRoutes); // Tenant routes
     this.log.block('REST').info('/containers')
     app.use('/containers', containersRoutes); // Containers routes
-    this.log.block('RET').info('/gateway')
+    this.log.block('GET').info('/gateway')
     app.use('/gateway', gatewayRoutes); // Gateway routes
     
   }
