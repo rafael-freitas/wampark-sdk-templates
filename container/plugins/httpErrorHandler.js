@@ -7,11 +7,19 @@
  * @updated -
  */
 
-import { ApplicationLogger } from 'wampark';
-import errorHandler from '../http/middlewares/errorHandler.js';
+import { ApplicationLogger, ApplicationError } from 'wampark';
 import { app } from './httpserver.js';
 
 const log = new ApplicationLogger('Plugin', 'httpErrorHandler')
+
+function errorHandler (err, req, res, next) {
+  const error = ApplicationError.parse(err);
+  res.status(error.status || 500);
+  res.json({
+    error: error.toObject(),
+  });
+};
+
 
 export default {
   install () {},
