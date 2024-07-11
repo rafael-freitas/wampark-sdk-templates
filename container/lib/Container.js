@@ -1,3 +1,11 @@
+/**
+ * @file Container
+ * @version 1.0.1
+ * @since 1.0.0
+ * @author Rafael Freitas Lima
+ * @created 2024-07-01
+ * @updated 2024-07-11 01:05:24
+ */
 import application, {ApplicationLogger} from "wampark";
 import axios from "axios";
 
@@ -94,7 +102,12 @@ class Container {
     app.use('/healthcheck', healthcheckRoutes); // Healthcheck route
   }
 
-  getTenantDatabaseConnection (database) {
+  async getTenantDatabaseConnectionFromDomain (domain) {
+    const tenant = await this.getTenant(domain)
+    return MongoConnectionFactory.getDatabaseConnection(tenant.database)
+  }
+
+  async getTenantDatabaseConnection (database) {
     return MongoConnectionFactory.getDatabaseConnection(database)
   }
 
