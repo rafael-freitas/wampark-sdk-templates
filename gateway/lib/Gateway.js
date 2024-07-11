@@ -66,7 +66,7 @@ export class Gateway {
   configureRoutes () {
     this.log.info('Configure HTTP Routes')
     // HTTP Routes
-    this.log.block('HTTP').info('/healthcheck')
+    this.log.block('GET').info('/healthcheck')
     app.use('/healthcheck', healthcheckRoutes); // Healthcheck route
     this.log.block('REST').info('/tenant')
     app.use('/tenant', tenantRoutes); // Tenant routes

@@ -12,4 +12,4 @@ class TenantsStore extends CollectionStore {
   }
 }
 
-export default new TenantsStore(TenantsModel, 60000, ['domain']); // Cache TTL de 60 segundos
+export default new TenantsStore(TenantsModel, 86400, ['domain']); // Cache TTL de 24H

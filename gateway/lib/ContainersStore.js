@@ -16,4 +16,4 @@ class ContainerStore extends CollectionStore {
   }
 }
 
-export default new ContainerStore(ContainersModel, 60000, ['path', 'staticPath']); // Cache TTL de 60 segundos
+export default new ContainerStore(ContainersModel, 86400, ['path', 'staticPath']); // Cache TTL de 24H

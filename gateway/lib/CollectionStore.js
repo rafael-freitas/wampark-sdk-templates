@@ -86,7 +86,7 @@ export default class CollectionStore {
       }
     });
 
-    const updatedDoc = await this.model.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+    const updatedDoc = await this.model.findByIdAndUpdate(id, updateData, { new: true, runValidators: true, upsert: true });
     if (updatedDoc) {
       this.memoryStore.set(id, { data: updatedDoc, timestamp: Date.now() });
 

@@ -1,5 +1,6 @@
 
 import ContainerStore from './ContainersStore.js';
+import SessionsStore from './SessionsStore.js';
 import TenantsStore from './TenantsStore.js';
 
 class MemoryStore {
@@ -32,5 +33,6 @@ class MemoryStore {
 const store = new MemoryStore();
 store.addCollection('containers', ContainerStore);
 store.addCollection('tenants', TenantsStore);
+store.addCollection('sessions', SessionsStore);
 
 export default store;

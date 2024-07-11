@@ -1,6 +1,6 @@
 {
   "name": "devkit-gateway",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Devkit Gateway Tenency microservice",
   "main": "gateway.js",
   "type": "module",
