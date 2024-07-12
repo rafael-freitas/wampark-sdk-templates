@@ -1,11 +1,4 @@
-/**
- * @file Rotas de Tenants
- * @version 1.0.0
- * @since 1.0.0
- * @created 2024-06-16 03:33:38
- * @updated 
- * @autor Rafael Freitas
- */
+// tenant.routes.js
 
 import express from 'express';
 import authorizer from '../middlewares/authorizer.js';
@@ -14,13 +7,6 @@ import { ApplicationError } from 'wampark';
 
 const router = express.Router();
 
-/**
- * Lista de tenants
- * @function
- * @param {Object} req - Objeto de requisição.
- * @param {Object} res - Objeto de resposta.
- * @param {Function} next - Próxima função middleware.
- */
 router.get('/', authorizer, async (req, res, next) => {
   try {
     let tenants = await TenantsModel.find().lean();
@@ -36,7 +22,6 @@ router.post('/', authorizer, async (req, res, next) => {
     await record.save();
     res.json(record);
   } catch (err) {
-    // throw err
     next(err);
   }
 });
@@ -75,8 +60,6 @@ router.get('/:id', authorizer, async (req, res, next) => {
   }
 });
 
-
-
 router.put('/:id', authorizer, async (req, res, next) => {
   try {
     const updatedResult = await TenantsModel.findOneAndUpdate(
@@ -111,8 +94,96 @@ router.delete('/:id', authorizer, async (req, res, next) => {
         message: `Tenant not found`
       });
     }
-    // no content to send
-    res.status(204);
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Add a container to the tenant
+router.get('/:id/containers', authorizer, async (req, res, next) => {
+  try {
+    const tenant = await TenantsModel.findById(req.params.id);
+    if (!tenant) {
+      throw new ApplicationError({
+        status: 404,
+        code: 'E001',
+        family: 'Tenants',
+        message: `Tenant not found`
+      });
+    }
+    res.json({
+      dataset: tenant.containers || []
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Add a container to the tenant
+router.put('/:id/containers', authorizer, async (req, res, next) => {
+  try {
+    const tenant = await TenantsModel.findById(req.params.id);
+    if (!tenant) {
+      throw new ApplicationError({
+        status: 404,
+        code: 'E001',
+        family: 'Tenants',
+        message: `Tenant not found`
+      });
+    }
+    tenant.containers.push(req.body);
+    await tenant.save();
+    res.json(tenant);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Remove a container from the tenant
+router.delete('/:id/containers/:containerId', authorizer, async (req, res, next) => {
+  try {
+    const tenant = await TenantsModel.findById(req.params.id);
+    if (!tenant) {
+      throw new ApplicationError({
+        status: 404,
+        code: 'F001',
+        family: 'Tenants',
+        message: `Tenant not found`
+      });
+    }
+    tenant.containers.id(req.params.containerId).remove();
+    await tenant.save();
+    res.json(tenant);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Update a container in the tenant
+router.put('/:id/containers/:containerId', authorizer, async (req, res, next) => {
+  try {
+    const tenant = await TenantsModel.findById(req.params.id);
+    if (!tenant) {
+      throw new ApplicationError({
+        status: 404,
+        code: 'G001',
+        family: 'Tenants',
+        message: `Tenant not found`
+      });
+    }
+    const container = tenant.containers.id(req.params.containerId);
+    if (!container) {
+      throw new ApplicationError({
+        status: 404,
+        code: 'H001',
+        family: 'Containers',
+        message: `Container not found`
+      });
+    }
+    container.set(req.body);
+    await tenant.save();
+    res.json(tenant);
   } catch (err) {
     next(err);
   }

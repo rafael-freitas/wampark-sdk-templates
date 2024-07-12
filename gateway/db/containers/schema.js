@@ -17,6 +17,13 @@ const schema = new mongoose.Schema({
   },
 
   /**
+   * Descrição do Tenant
+   */
+  description: {
+    type: String,
+  },
+
+  /**
    * HTTP container path
    * Ex: /app -> /app/container/TENANT_UUID
    */
@@ -58,6 +65,10 @@ const schema = new mongoose.Schema({
     default: true
   },
 
+  /**
+   * Ativa o proxy do path no gateway para o path do container
+   * Use false para container apenas com RPC
+   */
   proxyEnabled: {
     type: Boolean,
     default: true

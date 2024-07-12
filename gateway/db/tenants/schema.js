@@ -7,10 +7,6 @@ import { v5 as _uuid } from 'uuid'
 
 import common from '../_common/common.js'
 
-const CHAVE_TABELAS = 'TABELAS'
-const CHAVE_ROUTES = 'ROUTES'
-const CHAVE_RPC = 'RPC'
-
 const schema = new mongoose.Schema({
   // uuid: {
   //   type: String,
@@ -58,6 +54,34 @@ const schema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+
+  /**
+   * Flag para indicar se o tenat já foi instalado e configurado
+   * Se não foi instalado redireciona para o setup do tenant para configurar
+   * cada container para este tenant
+   */
+  installed: {
+    type: Boolean,
+    default: false
+  },
+
+  /**
+   * Containers adicionados para este tenant
+   */
+  containers: [new mongoose.Schema({
+    container: {
+      type: String,
+      ref: 'containers'
+    },
+    active: {
+      type: Boolean,
+      default: true
+    },
+    installed: {
+      type: Boolean,
+      default: false
+    }
+  })]
 })
 
 common(schema)
