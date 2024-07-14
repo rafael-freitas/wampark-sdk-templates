@@ -16,6 +16,7 @@ import { app } from './plugins/httpserver.js'
 // #http_middlewares - Middlewares HTTP
 
 // #http_routes - Rotas HTTP
+import indexRoutes from './routes/http/index.routes.js'
 
 // #routes - Rotas RPC/PUBSUB
 
@@ -40,6 +41,7 @@ application.setup({
 // #plugins_install - Instalar Plugins
 
 // #http_routes_install - HTTP Routes
+app.use(indexRoutes);
 
 // #routes_attach - Rotas RPC/PUBSUB
 
