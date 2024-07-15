@@ -10,7 +10,7 @@
 import { ApplicationError } from 'wampark';
 import { v4 as _uuid } from 'uuid'
 import express from 'express';
-import authorizer from '../middlewares/authorizer.js';
+import authorizer from './middlewares/authorizer.js';
 // import ContainersModel from '../../db/containers/ContainersModel.js';
 import store from '../../lib/MemoryStore.js'
 
@@ -107,4 +107,7 @@ router.delete('/:id', authorizer, async (req, res, next) => {
   }
 });
 
-export default router;
+const route = express.Router();
+route.use('/containers', router)
+
+export default route;

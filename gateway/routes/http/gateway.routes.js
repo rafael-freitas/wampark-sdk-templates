@@ -8,7 +8,7 @@
  */
 
 import express from 'express';
-import authorizer from '../middlewares/authorizer.js';
+import authorizer from './middlewares/authorizer.js';
 import dotenv from 'dotenv'
 import path from 'path'
 import fs from 'fs'
@@ -32,5 +32,7 @@ router.get('/env', authorizer, async (req, res, next) => {
   }
 });
 
+const route = express.Router();
+route.use('/gateway', router)
 
-export default router;
+export default route;

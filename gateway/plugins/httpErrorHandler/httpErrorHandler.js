@@ -4,21 +4,20 @@
  * @since 1.0.0
  * @namespace plugins
  * @author Rafael Freitas
- * @created 2024-06-12
+ * @created 2024-07-13 20:40:48
  * @updated -
  */
 
-import errorHandler from '../http/middlewares/errorHandler.js';
-import { app } from './httpserver.js';
+import errorHandler from './errorHandler.middlewere.js';
+import { app } from '../httpserver.js';
 import { ApplicationLogger } from 'wampark'
-// import logger from '../lib/logger.js';
-// const log = logger.create('httpErrorHandler')
+
 const log = new ApplicationLogger('Plugin', 'httpErrorHandler')
 
 export default {
   install () {},
   start () {
-    log.info(`HTTP error handler middleware installed`)
+    log.info(`Middleware installed`)
     app.use(errorHandler)
   },
 };

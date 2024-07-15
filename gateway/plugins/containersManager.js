@@ -5,22 +5,18 @@
  * @namespace plugins
  * @autor Rafael Freitas
  * @created 2024-06-17 16:50:56
- * @updated -
+ * @updated 2024-07-13 20:42:25
  */
 
 import { v4 as uuid } from 'uuid';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import Application, { ApplicationError, ApplicationLogger } from 'wampark';
 import { app } from './httpserver.js';
-// import ContainersModel from '../db/containers/ContainersModel.js';
-// import TenantsModel from '../db/tenants/TenantsModel.js';
-import errorHandler from '../http/middlewares/errorHandler.js';
+import errorHandler from './httpErrorHandler/errorHandler.middlewere.js';
 import store from '../lib/MemoryStore.js';
 
 const log = new ApplicationLogger('Plugin', 'ContainersManager')
 
-const HTTP_PORT = process.env.HTTP_PORT || 3000;
-const HTTP_HOST = process.env.HTTP_HOST || 'localhost';
 const LOG_REQUEST_STATIC = process.env.LOG_REQUEST_STATIC === 'true'
 
 let installed = false;
@@ -28,7 +24,7 @@ let installed = false;
 export default {
 
   getContainerTargetUrl(container) {
-    const containerUrl = `http://${container.host}:${container.port}`;
+    const containerUrl = `http://${container.host}:${container.port}/index/`;
     return containerUrl;
   },
 
@@ -103,12 +99,15 @@ export default {
             middlewareOptions.onRequest(proxyReq, req, res)
 
             if (staticRequest) {
-              proxyReq.path = req.originalUrl.replace(container.staticPath, '/static');
+              proxyReq.path = req.originalUrl.replace('/static/' + container.staticPath, '/static');
+              // proxyReq.path = '/static'
               return proxyReq.end()
             }
 
             // Replica o url original do request para o container
-            proxyReq.path = req.originalUrl
+            // proxyReq.path = req.originalUrl
+            proxyReq.path = req.originalUrl.replace('/' + container.path, '/index');
+            // proxyReq.path = '/index'
 
             // parse content para JSON string
             const bodyData = JSON.stringify(req.body);
@@ -148,7 +147,7 @@ export default {
           },
           error: (err, req, res) => {
             middlewareOptions.onError(err, req, res)
-            return res.send(err.message)
+            // return res.send(err.message)
           }
         },
       })
@@ -160,8 +159,7 @@ export default {
     
     const logBlocks = log.block('HTTP')
 
-    // Dynamic proxy for app with domain parameter
-    const containerEndpoint = async (req, res, next) => {
+    const gatewayCatchAllEndpoint = async (req, res, next) => {
       const requestId = uuid();
 
       let logBlockRequest = logBlocks.block('RequestId', requestId)
@@ -175,21 +173,25 @@ export default {
       // Extração de parâmetros da URL
       const pathParts = req.params[0].split('/').filter(part => part !== '');
       const params = {
-        containerPath: '/' + (pathParts[0] || ''),
+        containerPath: (pathParts[0] || ''),
         domain: pathParts[1],
       }
 
-      let container = await store.containers.getByPath(params.containerPath)
+      let container
       let staticContainer = false
 
-      if (!container) {
+      if (params.containerPath === 'static') {
+        params.containerPath = params.domain
+        staticContainer = true
+        params.domain = null
+
         container = await store.containers.getByStaticPath(params.containerPath)
-        if (container) {
-          staticContainer = true
-        }
+      }
+      else {
+        container = await store.containers.getByPath(params.containerPath)
       }
 
-      if (!container && !staticContainer) {
+      if (!container) {
         logBlockRequest.warn(`No such container for ${params.containerPath}`)
         return res.status(404).json({
           error: {
@@ -209,43 +211,65 @@ export default {
         })
       }
 
+      req.context = {
+        requestId,
+        container,
+        tenant: null,
+        log: logBlockRequest
+      }
+
       if (staticContainer) {
         // logBlockRequest = logBlockRequest.block('Tenant', tenant.name)
         logBlockRequest = logBlockRequest.block('Static')
 
-          let middlewareFunction = store.containers.getValue(container._id, 'middlewareStatic')
-          if (!middlewareFunction) {
-            middlewareFunction = this.getContainerMiddleware(container, true);
-            store.containers.setValue(container._id, 'middlewareStatic', middlewareFunction)
-          }
-          const middleware = middlewareFunction({
-            getHeaders: (proxyReq, req, res) => {
-              return this.getContainerProxyHeaders(container, false, requestId);
-            },
-            onRequest: (proxyReq, req, res) => {
+        let middlewareFunction = store.containers.getValue(container._id, 'middlewareStatic')
+        if (!middlewareFunction) {
+          middlewareFunction = this.getContainerMiddleware(container, true);
+          store.containers.setValue(container._id, 'middlewareStatic', middlewareFunction)
+        }
+
+        // atualizar bloco do log
+        req.context.log = logBlockRequest
+
+        const middleware = middlewareFunction({
+          getHeaders: (proxyReq, req, res) => {
+            return this.getContainerProxyHeaders(container, false, requestId);
+          },
+          onRequest: (proxyReq, req, res) => {
+            if (!LOG_REQUEST_STATIC) {
+              return
+            }
+            req.context.log.block('Send').info(req.originalUrl);
+          },
+          onResponse: (proxyRes, req, res, body) => {
+            if (proxyRes.statusCode >= 400) {
+              let message = proxyRes.statusMessage
+              req.context.log.block('Response', proxyRes.statusCode).warn(message)
+            }
+            else {
               if (!LOG_REQUEST_STATIC) {
                 return
               }
-              logBlockRequest.block('Send').info(req.originalUrl);
-            },
-            onResponse: (proxyRes, req, res, body) => {
-              if (proxyRes.statusCode >= 400) {
-                let message = proxyRes.statusMessage
-                logBlockRequest.block('Response', proxyRes.statusCode).warn(message)
-              }
-              else {
-                if (!LOG_REQUEST_STATIC) {
-                  return
-                }
-                logBlockRequest.block('Response', proxyRes.statusCode).info('OK');
-              }
-            },
-            onError: (err, req, res) => {
-              const { code, message } = err;
-              logBlockRequest.block('Response', code).error(message);
-            },
-          })
-          return middleware(req, res, next);
+              req.context.log.block('Response', proxyRes.statusCode).info('OK');
+            }
+          },
+          onError: (err, req, res) => {
+            let error = ApplicationError.parse(err)
+            if (err.code === 'ECONNREFUSED') {
+              error = new ApplicationError({
+                family: 'ContainersManager',
+                code: err.code,
+                message: `Container is offline`
+              })
+            }
+            delete error.stack
+            req.context.log.block('Response', error.code).error(error.message);
+            res.json({
+              error: error.toObject()
+            })
+          },
+        })
+        return middleware(req, res, next);
       }
       else {
         if (container.tenancy) {
@@ -266,6 +290,8 @@ export default {
             // log.error(`[HTTP][Container=${log.colors.green(containerObj.name)}][Tenant=${log.colors.red(domain)}][RequestId=${log.colors.green(requestId)}] ${error.message} ${log.fail}`);
             return next(error);
           }
+          req.context.tenant = tenant
+
           logBlockRequest = logBlockRequest.block('Tenant', tenant.name)
           logBlockRequest = logBlockRequest.block(req.method)
 
@@ -274,12 +300,20 @@ export default {
             middlewareFunction = this.getContainerMiddleware(container, false);
             store.containers.setValue(container._id, 'middleware', middlewareFunction)
           }
+
+          // atualizar bloco do log
+          req.context.log = logBlockRequest
+
           const middleware = middlewareFunction({
             getHeaders: (proxyReq, req, res) => {
-              return this.getContainerProxyHeaders(container, tenant || {}, requestId);
+              const headers = this.getContainerProxyHeaders(req.context.container, req.context.tenant || {}, req.context.requestId);
+              return {
+                ...headers,
+                'x-request-url': req.originalUrl
+              }
             },
             onRequest: (proxyReq, req, res) => {
-              logBlockRequest.block('Send').info(req.originalUrl);
+              req.context.log.block('Send').info(req.originalUrl);
             },
             onResponse: (proxyRes, req, res, body) => {
               if (proxyRes.statusCode >= 400) {
@@ -292,15 +326,26 @@ export default {
                     message = error.message
                   }
                 } catch (err) {}
-                logBlockRequest.block('Response', proxyRes.statusCode).warn(message)
+                req.context.log.block('Response', proxyRes.statusCode).warn(message)
               }
               else {
-                logBlockRequest.block('Response', proxyRes.statusCode).info('OK');
+                req.context.log.block('Response', proxyRes.statusCode).info('OK');
               }
             },
             onError: (err, req, res) => {
-              const { code, message } = err;
-              logBlockRequest.block('Response', code).error(message);
+              let error = ApplicationError.parse(err)
+              if (err.code === 'ECONNREFUSED') {
+                error = new ApplicationError({
+                  family: 'ContainersManager',
+                  code: err.code,
+                  message: `Container ${container._id} is offline`
+                })
+              }
+              delete error.stack
+              req.context.log.block('Response', error.code).error(error.message);
+              res.json({
+                error: error.toObject()
+              })
             },
           })
           return middleware(req, res, next);
@@ -308,7 +353,7 @@ export default {
       }
     }
 
-    app.use('*', containerEndpoint)
+    app.use('*', gatewayCatchAllEndpoint)
   },
 
   async initializeContainers() {
@@ -317,12 +362,14 @@ export default {
 
     // remover middlewares da memoria
     store.containers.afterUpdate = (id, data) => {
+      log.block('Container', id).info('Middlewares cleanup')
       store.containers.deleteValue(id, 'middlware')
       store.containers.deleteValue(id, 'middlewareStatic')
     }
 
     // remover middlewares da memoria
     store.containers.afterDelete = (id) => {
+      log.block('Container', id).info('Middlewares cleanup')
       store.containers.deleteValue(id, 'middlware')
       store.containers.deleteValue(id, 'middlewareStatic')
     }

@@ -1,5 +1,5 @@
 {
-  "name": "devkit-gateway",
+  "name": "app-gateway",
   "version": "1.1.0",
   "description": "Devkit Gateway Tenency microservice",
   "main": "gateway.js",

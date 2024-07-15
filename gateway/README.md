@@ -49,10 +49,10 @@ Indica para o container [kubernetes ou docker] o estado da aplicação.
 ### Private API
 Autenticação via JWT Bearer
 
-#### GET /tenant
+#### GET /tenants
 lista os tenants
 
-#### POST /tenant
+#### POST /tenants
 cria um tenant
 ```js
 {
@@ -64,13 +64,13 @@ cria um tenant
 }
 ```
  
-#### PUT /tenant/:id
+#### PUT /tenants/:id
 atualiza um tenant
 
-#### GET /tenant/:id
+#### GET /tenants/:id
 retorna um tenant
 
-#### DELETE /tenant/:id
+#### DELETE /tenants/:id
 remove um tenant
 
 ## Tipos

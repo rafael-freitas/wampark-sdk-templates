@@ -25,4 +25,7 @@ router.get('/', (req, res) => {
   });
 });
 
-export default router;
+const route = express.Router();
+route.use('/healthcheck', router)
+
+export default route;

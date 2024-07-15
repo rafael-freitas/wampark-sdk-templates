@@ -2,7 +2,7 @@
 
 import lodash from 'lodash'
 import application, { Route, ApplicationError } from "wampark"
-import store from '../lib/MemoryStore.js'
+import store from '../../lib/MemoryStore.js'
 
 export default class AppSessionSetRoute extends Route {
 

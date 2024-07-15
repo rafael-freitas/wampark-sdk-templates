@@ -1,7 +1,7 @@
 // tenant.routes.js
 
 import express from 'express';
-import authorizer from '../middlewares/authorizer.js';
+import authorizer from './middlewares/authorizer.js';
 import TenantsModel from '../../db/tenants/TenantsModel.js';
 import { ApplicationError } from 'wampark';
 
@@ -100,10 +100,14 @@ router.delete('/:id', authorizer, async (req, res, next) => {
   }
 });
 
-// Add a container to the tenant
+// List tenant containers
 router.get('/:id/containers', authorizer, async (req, res, next) => {
   try {
-    const tenant = await TenantsModel.findById(req.params.id);
+    const tenant = await TenantsModel.findById(req.params.id).populate({
+      path: 'containers.container',
+      select: 'name path staticPath active'
+    });
+
     if (!tenant) {
       throw new ApplicationError({
         status: 404,
@@ -112,8 +116,17 @@ router.get('/:id/containers', authorizer, async (req, res, next) => {
         message: `Tenant not found`
       });
     }
+
+    // const containers = tenant.containers.map(container => ({
+    //   id: container.container._id,
+    //   name: container.container.name,
+    //   path: container.container.path,
+    //   staticPath: container.container.staticPath,
+    //   active: container.container.active
+    // }));
+
     res.json({
-      dataset: tenant.containers || []
+      dataset: tenant.containers
     });
   } catch (err) {
     next(err);
@@ -189,4 +202,7 @@ router.put('/:id/containers/:containerId', authorizer, async (req, res, next) =>
   }
 });
 
-export default router;
+const route = express.Router();
+route.use('/tenants', router)
+
+export default route;

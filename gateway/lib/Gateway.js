@@ -14,16 +14,16 @@ import mongodb from '../plugins/mongodb.js'
 import httpserver, {app} from '../plugins/httpserver.js'
 import proxyWs from '../plugins/proxyws.js'
 import containersManager from '../plugins/containersManager.js'
-import httpErrorHandler from '../plugins/httpErrorHandler.js'
+import httpErrorHandler from '../plugins/httpErrorHandler/httpErrorHandler.js'
 
 // Middlewares HTTP
 
 
 // Rotas HTTP
-import healthcheckRoutes from '../http/routes/healthcheck.routes.js';
-import tenantRoutes from '../http/routes/tentant.routes.js';
-import containersRoutes from '../http/routes/containers.routes.js';
-import gatewayRoutes from '../http/routes/gateway.routes.js';
+import healthcheckRoutes from '../routes/http/healthcheck.routes.js';
+import tenantRoutes from '../routes/http/tentants.routes.js';
+import containersRoutes from '../routes/http/containers.routes.js';
+import gatewayRoutes from '../routes/http/gateway.routes.js';
 
 /**
  * Export Application instance
@@ -65,15 +65,16 @@ export class Gateway {
 
   configureRoutes () {
     this.log.info('Configure HTTP Routes')
+    const logBlock = this.log.block('HTTP')
     // HTTP Routes
-    this.log.block('GET').info('/healthcheck')
-    app.use('/healthcheck', healthcheckRoutes); // Healthcheck route
-    this.log.block('REST').info('/tenant')
-    app.use('/tenant', tenantRoutes); // Tenant routes
-    this.log.block('REST').info('/containers')
-    app.use('/containers', containersRoutes); // Containers routes
-    this.log.block('GET').info('/gateway')
-    app.use('/gateway', gatewayRoutes); // Gateway routes
+    logBlock.block('GET', '/healthcheck').info('Routes added')
+    app.use(healthcheckRoutes); // Healthcheck route
+    logBlock.block('REST', '/tenants').info('Routes added')
+    app.use(tenantRoutes); // Tenant routes
+    logBlock.block('REST', '/containers').info('Routes added')
+    app.use(containersRoutes); // Containers routes
+    logBlock.block('REST', '/gateway').info('Routes added')
+    app.use(gatewayRoutes); // Gateway routes
     
   }
 }

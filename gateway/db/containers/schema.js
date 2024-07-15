@@ -32,6 +32,7 @@ const schema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  
   staticPath: {
     type: String,
     unique: false,
@@ -47,6 +48,11 @@ const schema = new mongoose.Schema({
     type: String,
     required: true,
     default: 'localhost',
+  },
+
+  installerEndpoint: {
+    type: String,
+    default: '',
   },
 
   /**

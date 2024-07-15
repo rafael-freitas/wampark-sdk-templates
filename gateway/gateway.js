@@ -1,18 +1,17 @@
 /**
- * @file Gateway Tenancy Service
- * @version 1.1.0
+ * @file Gateway Service
+ * @version 1.0.0
  * @since 1.0.0
  * @author Rafael Freitas
- * @created 2024-06-16 02:09:35
- * @updated 2024-07-11 06:28:49
+ * @created 2024-07-13 20:31:39
  */
 
 import { fileURLToPath } from 'url'
 import gateway, {application} from './lib/Gateway.js'
 
-import AppSessionSetRoute from './routes/app.session.set.js'
-import AppSessionGetRoute from './routes/app.session.get.js'
-import WampSessionOnLeave from './routes/wamp.session.on_leave.js'
+import AppSessionSetRoute from './routes/ws/app.session.set.js'
+import AppSessionGetRoute from './routes/ws/app.session.get.js'
+import WampSessionOnLeave from './routes/ws/wamp.session.on_leave.js'
 
 // Path do arquivo principal da aplicação
 const __filename = fileURLToPath(import.meta.url)
